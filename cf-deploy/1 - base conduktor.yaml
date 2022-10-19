@@ -1,0 +1,146 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: ""
+Parameters:
+  GHCRUSERNAME:
+    Type: String 
+  GHCRPASSWORD:
+    Type: String 
+Resources:
+    CodeBuildRole:
+        Type: AWS::IAM::Role
+        Properties:
+          AssumeRolePolicyDocument:
+            Statement:
+            - Action: sts:AssumeRole
+              Effect: Allow
+              Principal:
+                Service: codebuild.amazonaws.com
+          Path: /
+          RoleName: !Join
+            - '-'
+            - - !Ref 'AWS::StackName'
+              - CodeBuild
+        
+
+    CodeBuildIAMPolicy:
+        Type: AWS::IAM::Policy
+        Properties:
+            Roles:
+              - !Ref 'CodeBuildRole'
+            PolicyName: !Join
+              - '-'
+              -  - !Ref 'AWS::StackName'
+                 - CodeBuildPolicy
+            PolicyDocument:
+              Statement:
+              - Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+                Effect: Allow
+                Resource: '*'
+              - Action:
+                - codebuild:CreateReportGroup
+                - codebuild:CreateReport
+                - codebuild:UpdateReport
+                - codebuild:BatchPutTestCases
+                - codebuild:BatchPutCodeCoverages
+                Effect: Allow
+                Resource: !Sub "arn:aws:codebuild:${AWS::Region}:${AWS::AccountId}:report-group/${ConduktorPlatformBuild}-*"
+              - Action:
+                - ecr:CompleteLayerUpload
+                - ecr:UploadLayerPart
+                - ecr:InitiateLayerUpload
+                - ecr:BatchCheckLayerAvailability
+                - ecr:PutImage
+                Effect: Allow
+                Resource: !Sub "${ConduktorPlatformECRRepository.Arn}"
+              - Action:
+                - ecr:GetAuthorizationToken
+                Effect: Allow
+                Resource: "*"
+              - Action:
+                - s3:GetObject
+                - s3:GetObjectVersion
+                Effect: Allow
+                Resource: 
+                  - !Sub "${S3Bucket.Arn}"
+                  - !Sub "${S3Bucket.Arn}/*"
+              - Action:
+                - s3:ListBucket
+                - s3:GetBucketAcl
+                - s3:GetBucketLocation
+                Effect: Allow
+                Resource: !Sub "${S3Bucket.Arn}"
+
+
+    ConduktorPlatformECRRepository:
+        Type: "AWS::ECR::Repository"
+        Properties:
+          RepositoryName: "conduktor-platform-msk"
+                
+
+    ConduktorPlatformBuild:
+        Type: "AWS::CodeBuild::Project"
+        Properties:
+            Source: 
+                InsecureSsl: false
+                Location: !Sub "${S3Bucket}/"
+                Type: "S3"
+            Artifacts: 
+                Type: "NO_ARTIFACTS"
+            Cache: 
+                Type: "NO_CACHE"
+            Environment: 
+                ComputeType: "BUILD_GENERAL1_SMALL"
+                EnvironmentVariables: 
+                  - 
+                    Name: "AWS_DEFAULT_REGION"
+                    Type: "PLAINTEXT"
+                    Value: !Ref AWS::Region
+                  - 
+                    Name: "AWS_ACCOUNT_ID"
+                    Type: "PLAINTEXT"
+                    Value: !Ref AWS::AccountId
+                  - 
+                    Name: "IMAGE_TAG"
+                    Type: "PLAINTEXT"
+                    Value: "latest"
+                  - 
+                    Name: "IMAGE_REPO_NAME"
+                    Type: "PLAINTEXT"
+                    Value: !Ref ConduktorPlatformECRRepository
+                  - Name: "GHCR_USERNAME"
+                    Type: "PLAINTEXT"
+                    Value: !Ref GHCRUSERNAME
+                  - Name: "GHCR_PASSWORD"
+                    Type: "PLAINTEXT"
+                    Value: !Ref GHCRPASSWORD
+
+                Image: "aws/codebuild/amazonlinux2-x86_64-standard:4.0"
+                ImagePullCredentialsType: "CODEBUILD"
+                PrivilegedMode: true
+                Type: "LINUX_CONTAINER"
+            ServiceRole: !Ref CodeBuildRole
+            TimeoutInMinutes: 10
+            EncryptionKey: !Sub "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/aws/s3"
+            BadgeEnabled: false
+            Visibility: "PRIVATE"
+            LogsConfig: 
+                CloudWatchLogs: 
+                    Status: "ENABLED"
+                S3Logs: 
+                    Status: "DISABLED"
+                    EncryptionDisabled: false
+            Name: !Join
+              - '-'
+              - - conduktor-platform-build
+                - !Ref 'AWS::StackName'
+                
+
+    S3Bucket:
+        Type: "AWS::S3::Bucket"
+        Properties:
+            VersioningConfiguration: 
+                Status: "Enabled"
+
