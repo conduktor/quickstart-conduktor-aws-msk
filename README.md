@@ -15,9 +15,3 @@ Supply your github username and personal access key so that you can connect to t
 # What if I have a license key?
 
 In that case, change the task definition in the third CloudFormation file (will be going away soon as well, when 1.1.3 is released)
-
-# Areas of improvement
-
-- Join diagrams of architecture
-
-- Output important information out of the CloudFormation files (ALB URL, etc)

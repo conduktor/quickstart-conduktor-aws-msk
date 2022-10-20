@@ -467,14 +467,7 @@ Resources:
             SubnetId: !Select [2, !Ref SubnetIDs]
             SecurityGroups:
                 - !Ref MountTargetSecurityGroup
-# Outputs:
-#   ecscluster:
-#     Value: !Ref ECSCluster
-#   ecsservice:
-#     Value: !Ref service
-#   MountTargetID:
-#     Description: Mount target ID
-#     Value: !Ref MountTarget
-#   FileSystemID:
-#     Description: File system ID
-#     Value: !Ref FileSystem
+
+Outputs:
+  ConduktorPlatformURL:
+    Value: !GetAtt ALB.DNSName
