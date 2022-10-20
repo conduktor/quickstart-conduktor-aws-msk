@@ -181,8 +181,28 @@ Resources:
                       Principal:
                           Service: ecs-tasks.amazonaws.com
             MaxSessionDuration: 3600
-            ManagedPolicyArns:
-                - "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+            Policies:
+                - PolicyDocument:
+                    {
+                        "Version": "2012-10-17",
+                        "Statement": [
+                            {
+                                "Effect": "Allow",
+                                "Action": [
+                                    "ecr:GetAuthorizationToken",
+                                    "ecr:BatchCheckLayerAvailability",
+                                    "ecr:GetDownloadUrlForLayer",
+                                    "ecr:BatchGetImage",
+                                    "logs:CreateLogStream",
+                                    "logs:PutLogEvents",
+                                    "logs:CreateLogGroup"
+                                ],
+                                "Resource": "*"
+                            }
+                        ]
+                    }
+                  PolicyName: ECSTaskExecutionRole
+    
 
     ECSServiceRole:
         Type: AWS::IAM::Role
