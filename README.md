@@ -1,7 +1,6 @@
 # Steps
 
-1) Deploy the first CloudFormation file
-Supply your github username and personal access key so that you can connect to the internal Docker image (will be removed when the new public image is released)
+1) Deploy the first CloudFormation file, this will create ECR, S3 and CodeBuild resources
 
 2) upload all the files / folders in this repo (`conduktor-platform-config`, `buildspec.yml`, `Dockerfile`) in the S3 bucket that was created 
 

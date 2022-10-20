@@ -1,10 +1,5 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: ""
-Parameters:
-  GHCRUSERNAME:
-    Type: String
-  GHCRPASSWORD:
-    Type: String
 Resources:
   CodeBuildRole:
     Type: AWS::IAM::Role
@@ -103,12 +98,6 @@ Resources:
           - Name: "IMAGE_REPO_NAME"
             Type: "PLAINTEXT"
             Value: !Ref ConduktorPlatformECRRepository
-          - Name: "GHCR_USERNAME"
-            Type: "PLAINTEXT"
-            Value: !Ref GHCRUSERNAME
-          - Name: "GHCR_PASSWORD"
-            Type: "PLAINTEXT"
-            Value: !Ref GHCRPASSWORD
 
         Image: "aws/codebuild/amazonlinux2-x86_64-standard:4.0"
         ImagePullCredentialsType: "CODEBUILD"
