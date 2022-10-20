@@ -1,42 +1,42 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: ""
-Parameters:  
-  VpcID: 
+Parameters:
+  VpcID:
     Description: VPC ID
     Type: "AWS::EC2::VPC::Id"
-  MSKSubnetIDs: 
+  MSKSubnetIDs:
     Description: Subnet IDs (please select 3)
     Type: "List<AWS::EC2::Subnet::Id>"
 
 Resources:
-    MSKCluster:
-        Type: "AWS::MSK::Cluster"
-        Properties:
-            ClusterName: "demo-msk-conduktor"
-            NumberOfBrokerNodes: 3
-            KafkaVersion: "3.1.1"
-            ClientAuthentication: 
-                Sasl: 
-                    Scram: 
-                        Enabled: false
-                    Iam: 
-                        Enabled: true
-                Tls: 
-                    Enabled: false
-                Unauthenticated: 
-                    Enabled: false
-            BrokerNodeGroupInfo: 
-                BrokerAZDistribution: "DEFAULT"
-                ClientSubnets: !Ref MSKSubnetIDs
-                InstanceType: "kafka.t3.small"
-                SecurityGroups: 
-                  - !Ref MSKSecurityGroup
-                StorageInfo: 
-                    EBSStorageInfo: 
-                        VolumeSize: 10
+  MSKCluster:
+    Type: "AWS::MSK::Cluster"
+    Properties:
+      ClusterName: "demo-msk-conduktor"
+      NumberOfBrokerNodes: 3
+      KafkaVersion: "3.1.1"
+      ClientAuthentication:
+        Sasl:
+          Scram:
+            Enabled: false
+          Iam:
+            Enabled: true
+        Tls:
+          Enabled: false
+        Unauthenticated:
+          Enabled: false
+      BrokerNodeGroupInfo:
+        BrokerAZDistribution: "DEFAULT"
+        ClientSubnets: !Ref MSKSubnetIDs
+        InstanceType: "kafka.t3.small"
+        SecurityGroups:
+          - !Ref MSKSecurityGroup
+        StorageInfo:
+          EBSStorageInfo:
+            VolumeSize: 10
 
-    MSKSecurityGroup:
-      Type: AWS::EC2::SecurityGroup
-      Properties:
-        GroupDescription: Allow traffic into our MSK cluster
-        VpcId: !Ref VpcID
+  MSKSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow traffic into our MSK cluster
+      VpcId: !Ref VpcID

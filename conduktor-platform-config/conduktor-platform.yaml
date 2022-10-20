@@ -1,6 +1,6 @@
 organization:
- name: demo
- 
+  name: demo
+
 clusters:
   - id: MSK
     name: MSK Cluster

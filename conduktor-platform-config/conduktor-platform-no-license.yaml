@@ -1,6 +1,6 @@
 organization:
- name: demo
- 
+  name: demo
+
 clusters:
   - id: MSK
     name: MSK Cluster
@@ -13,7 +13,6 @@ clusters:
       sasl.mechanism=AWS_MSK_IAM
       sasl.jaas.config=software.amazon.msk.auth.iam.IAMLoginModule required;
       sasl.client.callback.handler.class=software.amazon.msk.auth.iam.IAMClientCallbackHandler
-
 
 auth:
   demo-users:
