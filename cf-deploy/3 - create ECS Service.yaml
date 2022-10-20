@@ -5,7 +5,7 @@ Parameters:
     Description: VPC ID
     Type: AWS::EC2::VPC::Id
   SubnetIDs: 
-    Description: Subnet IDs that can communicate with your Kafka cluster
+    Description: PLEASE SELECT 3. Subnet IDs that can communicate with your Kafka cluster
     Type: List<AWS::EC2::Subnet::Id>
   PublicSubnetIDs: 
     Description: Subnet IDs that are public to access your ALB
@@ -143,6 +143,9 @@ Resources:
                     Value: "nano"
                 Essential: true
                 Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/conduktor-platform-msk:latest
+                MountPoints:
+                    - ContainerPath: /var/conduktor
+                      SourceVolume: my-efs
                 LogConfiguration: 
                     LogDriver: "awslogs"
                     Options: 
@@ -164,7 +167,11 @@ Resources:
               - "FARGATE"
             Cpu: "2048"
             Memory: "8192"
-
+            Volumes:
+                - EFSVolumeConfiguration: 
+                    FilesystemId: !Ref FileSystem
+                    RootDirectory: /
+                  Name: my-efs
 
     ECSTaskExecutionRole:
         Type: "AWS::IAM::Role"
@@ -419,3 +426,59 @@ Resources:
                 - !Ref ALBSecurityGroup
             Subnets: !Ref PublicSubnetIDs
             Type: application
+
+    MountTargetSecurityGroup:
+        Type: 'AWS::EC2::SecurityGroup'
+        Properties:
+            VpcId: !Ref VpcID
+            GroupDescription: Security group for mount target
+            SecurityGroupIngress:
+                -   IpProtocol: tcp
+                    FromPort: '2049'
+                    ToPort: '2049'
+                    SourceSecurityGroupId: !Ref FargateSecurityGroup
+
+    FileSystem:
+        Type: 'AWS::EFS::FileSystem'
+        Properties:
+          FileSystemTags:
+            - Key: Name
+              Value: conduktor-platform
+
+    MountTarget:
+        Type: 'AWS::EFS::MountTarget'
+        Properties:
+            FileSystemId: !Ref FileSystem
+            SubnetId: !Select [ 0, !Ref SubnetIDs ]
+            SecurityGroups:
+                - !Ref MountTargetSecurityGroup
+
+    MountTarget2:
+        Type: 'AWS::EFS::MountTarget'
+        Properties:
+            FileSystemId: !Ref FileSystem
+            SubnetId: !Select [ 1, !Ref SubnetIDs ]
+            SecurityGroups:
+                - !Ref MountTargetSecurityGroup
+
+    
+    MountTarget3:
+        Type: 'AWS::EFS::MountTarget'
+        Properties:
+            FileSystemId: !Ref FileSystem
+            SubnetId: !Select [ 2, !Ref SubnetIDs ]
+            SecurityGroups:
+                - !Ref MountTargetSecurityGroup
+
+            
+# Outputs:
+#   ecscluster:
+#     Value: !Ref ECSCluster
+#   ecsservice:
+#     Value: !Ref service
+#   MountTargetID:
+#     Description: Mount target ID
+#     Value: !Ref MountTarget
+#   FileSystemID:
+#     Description: File system ID
+#     Value: !Ref FileSystem

@@ -18,8 +18,6 @@ In that case, change the task definition in the third CloudFormation file (will 
 
 # Areas of improvement
 
-- Could have an EFS file system to bind ECS to /var/conduktor (to store the logs, database if embedded and prometheus data)
-
 - Join diagrams of architecture
 
 - Output important information out of the CloudFormation files (ALB URL, etc)
