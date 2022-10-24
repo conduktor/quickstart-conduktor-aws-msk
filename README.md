@@ -13,8 +13,3 @@
 5) Deploy the third CloudFormation file, which will create an ECS service using Fargate, and launch an ALB to expose the conduktor platform container. Supply the bootstrap servers to the container (can be private)
 
 ![Conduktor Platform ECS Service](./arch-diagrams/step3-ecs.png)
-
-
-# What if I have a license key?
-
-In that case, change the task definition in the third CloudFormation file (will be going away soon as well, when 1.1.3 is released)
