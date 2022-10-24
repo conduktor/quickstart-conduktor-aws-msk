@@ -1,14 +1,49 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: ""
+Metadata: 
+  AWS::CloudFormation::Interface: 
+    ParameterGroups: 
+      - 
+        Label: 
+          default: "Network Configuration"
+        Parameters: 
+          - VpcID
+          - SubnetIDs
+          - PublicSubnetIDs
+      - 
+        Label: 
+          default: "MSK Configuration"
+        Parameters: 
+          - MSKBootstrapServersURL
+          - MSKSecurityGroupID
+      - 
+        Label: 
+          default: "Conduktor Platform Configuration"
+        Parameters: 
+          - LicenseKey
+    ParameterLabels: 
+      VpcID: 
+        default: "Which VPC should this be deployed to?"
+      SubnetIDs:
+        default: "What subnets can communicate with your Kafka cluster?"
+      PublicSubnetIDs: 
+        default: "Which subnets would you like to use for your Application Load Balancer?"
+      MSKBootstrapServersURL: 
+        default: "What is the connection URL of your MSK cluster?"
+      MSKSecurityGroupID: 
+        default: "Which security group is your MSK cluster setup with?"
+      LicenseKey: 
+        default: "(optional) Do you have a Conduktor license key?"
+
+
 Parameters:
     VpcID:
-        Description: VPC ID
         Type: AWS::EC2::VPC::Id
     SubnetIDs:
-        Description: PLEASE SELECT 3. Subnet IDs that can communicate with your Kafka cluster
+        Description: "Please select THREE subnets."
         Type: List<AWS::EC2::Subnet::Id>
     PublicSubnetIDs:
-        Description: Subnet IDs that are public to access your ALB
+        Description: "Must select PUBLIC subnets"
         Type: List<AWS::EC2::Subnet::Id>
     MSKSecurityGroupID:
         Description: The Security Group ID of MSK
@@ -16,6 +51,10 @@ Parameters:
     MSKBootstrapServersURL:
         Description: Bootstrap server for your MSK cluster
         Type: String
+    LicenseKey:
+        Description: "Leave empty if you don't have a key"
+        Type: String
+        Default: ""
 
 Resources:
     ECSTaskRoleForConduktorPlatform:
@@ -91,7 +130,7 @@ Resources:
                 Type: "ECS"
             LoadBalancers:
                 - ContainerName: conduktor-platform
-                  ContainerPort: 80
+                  ContainerPort: 8080
                   TargetGroupArn: !Ref ECSTargetGroup
         DependsOn:
             - ALBPublicListener
@@ -102,8 +141,8 @@ Resources:
             GroupDescription: Allow traffic into our Fargate Tasks
             VpcId: !Ref VpcID
             SecurityGroupIngress:
-                - FromPort: "80"
-                  ToPort: "80"
+                - FromPort: "8080"
+                  ToPort: "8080"
                   SourceSecurityGroupId: !Ref ALBSecurityGroup
                   IpProtocol: "tcp"
 
@@ -123,18 +162,15 @@ Resources:
                 - DockerLabels: {}
                   Environment:
                       - Name: "CDK_IN_CONF_FILE"
-                        Value: "/etc/conduktor-platform-config/conduktor-platform-no-license.yaml"
-                      # if you have a license, uncomment the lines below:
-                      # -
-                      #   Name: "LICENSE_KEY"
-                      #   Value: "<your license key here>"
-                      # -
-                      #   Name: "CDK_IN_CONF_FILE"
-                      #   Value: "/etc/conduktor-platform-config/conduktor-platform.yaml"
+                        Value: "/etc/conduktor-platform-config/conduktor-platform.yaml"
+                      - Name: "LICENSE_KEY"
+                        Value: !Ref LicenseKey
                       - Name: "MSK_BOOTSTRAP_SERVERS"
                         Value: !Ref MSKBootstrapServersURL
                       - Name: "RUN_MODE"
                         Value: "nano"
+                      - Name: "PLATFORM_LISTENING_PORT"
+                        Value: "8080"
                   Essential: true
                   Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/conduktor-platform-msk:latest
                   MountPoints:
@@ -149,8 +185,8 @@ Resources:
                           awslogs-stream-prefix: "ecs"
                   Name: "conduktor-platform"
                   PortMappings:
-                      - ContainerPort: 80
-                        HostPort: 80
+                      - ContainerPort: 8080
+                        HostPort: 8080
                         Protocol: "tcp"
             Family: "conduktor-platform"
             TaskRoleArn: !GetAtt ECSTaskRoleForConduktorPlatform.Arn
@@ -428,7 +464,7 @@ Resources:
     ECSTargetGroup:
         Type: "AWS::ElasticLoadBalancingV2::TargetGroup"
         Properties:
-            Port: 80
+            Port: 8080
             Protocol: HTTP
             TargetType: ip
             VpcId: !Ref VpcID

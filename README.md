@@ -18,11 +18,3 @@
 # What if I have a license key?
 
 In that case, change the task definition in the third CloudFormation file (will be going away soon as well, when 1.1.3 is released)
-
-# TODO
-
-- Set PLATFORM_LISTENING_PORT to 8080 and change stack accordingly
-
-- Update to 1.1.3
-
-- Remove no license file 

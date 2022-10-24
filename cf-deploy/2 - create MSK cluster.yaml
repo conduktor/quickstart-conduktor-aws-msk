@@ -40,3 +40,8 @@ Resources:
     Properties:
       GroupDescription: Allow traffic into our MSK cluster
       VpcId: !Ref VpcID
+
+
+Outputs:
+  MSKSecurityGroupID:
+    Value: !Ref MSKSecurityGroup
