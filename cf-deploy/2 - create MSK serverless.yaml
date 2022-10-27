@@ -1,0 +1,34 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: ""
+Parameters:
+  VpcID:
+    Description: VPC ID
+    Type: "AWS::EC2::VPC::Id"
+  MSKSubnetIDs:
+    Description: Subnet IDs (please select 3)
+    Type: "List<AWS::EC2::Subnet::Id>"
+
+Resources:
+  MSKServerlessCluster:
+    Type: AWS::MSK::ServerlessCluster
+    Properties: 
+      ClientAuthentication: 
+        Sasl:
+          Iam:
+            Enabled: true
+      ClusterName: "demo-msk-serverless-conduktor"
+      VpcConfigs: 
+        - SecurityGroups: 
+            - !Ref MSKSecurityGroup
+          SubnetIds: !Ref MSKSubnetIDs
+
+  MSKSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow traffic into our MSK cluster
+      VpcId: !Ref VpcID
+
+
+Outputs:
+  MSKSecurityGroupID:
+    Value: !Ref MSKSecurityGroup
