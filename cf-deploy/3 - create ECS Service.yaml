@@ -169,7 +169,7 @@ Resources:
                         Value: !Ref MSKBootstrapServersURL
                       - Name: "RUN_MODE"
                         Value: "nano"
-                      - Name: "PLATFORM_LISTENING_PORT"
+                      - Name: "CDK_LISTENING_PORT"
                         Value: "8080"
                   Essential: true
                   Image: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/conduktor-platform-msk:latest
