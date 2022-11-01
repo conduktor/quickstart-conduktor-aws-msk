@@ -1,0 +1,36 @@
+organization:
+  name: demo
+
+clusters:
+  - id: MSK
+    name: MSK Cluster
+    color: "#0013E7"
+    ignoreUntrustedCertificate: false
+    bootstrapServers: "${MSK_BOOTSTRAP_SERVERS}"
+    zookeeperServer:
+    properties: |
+      security.protocol=SASL_SSL
+      sasl.mechanism=AWS_MSK_IAM
+      sasl.jaas.config=software.amazon.msk.auth.iam.IAMLoginModule required;
+      sasl.client.callback.handler.class=software.amazon.msk.auth.iam.IAMClientCallbackHandler
+
+  - id: OtherMSKCluster
+    name: MSK Cluster 2
+    color: "#FF4302"
+    ignoreUntrustedCertificate: false
+    bootstrapServers: "${MSK_BOOTSTRAP_SERVERS_2}"
+    zookeeperServer:
+    properties: |
+      security.protocol=SASL_SSL
+      sasl.mechanism=AWS_MSK_IAM
+      sasl.jaas.config=software.amazon.msk.auth.iam.IAMLoginModule required;
+      sasl.client.callback.handler.class=software.amazon.msk.auth.iam.IAMClientCallbackHandler
+
+auth:
+  demo-users:
+    - email: admin@example.com
+      password: password
+      groups:
+        - ADMIN
+
+license: "${LICENSE_KEY}"
